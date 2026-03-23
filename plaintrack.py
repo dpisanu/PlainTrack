@@ -1,130 +1,205 @@
 import os
 import argparse
 import re
-from datetime import datetime, date
-import calendar
+import sys
+from datetime import datetime
 
 class TimeTrackerReport:
     def __init__(self, base_path, year, month):
         self.base_path = base_path
-        self.year = year
-        self.month = month
+        self.year = int(year)
+        self.month = int(month)
         self.config_path = os.path.join(base_path, "config")
-        self.months_path = os.path.join(base_path, "months", f"{month:02d}")
+        self.months_path = os.path.join(base_path, "months", f"{self.month:02d}")
         self.errors = []
-        self.warnings = []
         self.config = {}
 
+    def log_step(self, message, success=True):
+        """Gibt eine Zeile im Boot-Sequenz-Stil aus"""
+        status = "  [ ✅ ]  " if success else "  [ ❌ ]  "
+        # Padding für die Nachricht, damit die Status-Symbole untereinander stehen
+        print(f"{status} {message}")
+
     def run_pre_checks(self):
-        """Prüft die Existenz der Ordnerstruktur"""
-        if not os.path.exists(self.base_path):
-            self.fail(f"Year-Pfad existiert nicht: {self.base_path}")
-        if not os.path.exists(self.config_path):
-            self.fail(f"Config-Ordner fehlt: {self.config_path}")
-        if not os.path.exists(os.path.dirname(self.months_path)):
-            self.fail(f"Ordner 'months' fehlt im Verzeichnis.")
-        if not os.path.exists(self.months_path):
-            self.fail(f"Keine Daten für Monat {self.month} gefunden: {self.months_path}")
+        """Prüft die Infrastruktur und Pfade"""
+        print(f"\n--- Initialisierung Arbeitszeit-Report {self.month:02d}/{self.year} ---")
+        
+        checks = [
+            (f"Root-Verzeichnis ({self.base_path})", os.path.exists(self.base_path)),
+            ("Config-Verzeichnis (/config)", os.path.exists(self.config_path)),
+            ("Monats-Basisordner (/months)", os.path.exists(os.path.join(self.base_path, "months"))),
+            (f"Daten für Monat {self.month:02d}", os.path.exists(self.months_path))
+        ]
+        
+        for msg, result in checks:
+            self.log_step(f"Prüfe {msg}...", result)
+            if not result:
+                print(f"\nCRITICAL: Abbruch - Struktur unvollständig.")
+                sys.exit(1)
+
+    def _validate_numeric_config(self, filename, min_val=0, max_val=None, is_int=False):
+        """Validierungshilfe für numerische Dateien"""
+        path = os.path.join(self.config_path, filename)
+        if not os.path.exists(path):
+            self.log_step(f"{filename.ljust(25)} fehlt", False)
+            self.errors.append(f"Config: {filename} fehlt")
+            return None
+        
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                raw = f.read().strip().replace(',', '.')
+                if not raw: raise ValueError("Datei leer")
+                val = int(raw) if is_int else float(raw)
+                
+                if val < min_val or (max_val is not None and val > max_val):
+                    raise ValueError(f"Wert außerhalb Bereich ({min_val}-{max_val})")
+                
+                self.log_step(f"{filename.ljust(25)} validiert ({val})")
+                return val
+        except ValueError:
+            self.log_step(f"{filename.ljust(25)} ungültig", False)
+            self.errors.append(f"Config: {filename} hat ungültigen Wert")
+            return None
 
     def validate_configs(self):
-        """Validiert die Inhalte der .config Dateien"""
-        # Beispiel: .dailytargethours
-        target_path = os.path.join(self.config_path, ".dailytargethours")
-        if not os.path.exists(target_path):
-            self.fail(".dailytargethours fehlt")
+        """Prüft alle 9 Konfigurationsdateien gemäß Spezifikation"""
+        print("\n--- Validierung Konfigurationsdateien ---")
         
-        with open(target_path, "r") as f:
-            val = f.read().strip().replace(',', '.')
-            try:
-                hours = float(val)
-                if hours < 1: raise ValueError()
-                self.config['daily_target'] = hours
-            except ValueError:
-                self.fail(".dailytargethours muss eine Zahl >= 1 sein.")
+        # 1. Numerische Limits und Targets
+        self.config['daily_target'] = self._validate_numeric_config(".dailytargethours", min_val=1)
+        self.config['daily_limit'] = self._validate_numeric_config(".dailylegallimit", min_val=1, max_val=10)
+        self.config['weekly_target'] = self._validate_numeric_config(".weeklytargethours", min_val=1)
+        self.config['weekly_limit'] = self._validate_numeric_config(".weeklycompanyhourslimit", min_val=1)
+        self.config['vacation'] = self._validate_numeric_config(".vacationdays", min_val=1, is_int=True)
+        self.config['special_vacation'] = self._validate_numeric_config(".specialvacationdays", min_val=1, is_int=True)
 
-        # .workingdays einlesen
-        working_days_path = os.path.join(self.config_path, ".workingdays")
-        if not os.path.exists(working_days_path):
-            self.fail(".workingdays fehlt")
-        
-        with open(working_days_path, "r") as f:
-            days = [line.strip() for line in f if line.strip()]
-            if not days: self.fail(".workingdays ist leer")
-            if len(days) != len(set(days)): self.fail("Doppelte Einträge in .workingdays")
-            self.config['working_days'] = days
+        # 2. Working Days
+        wd_path = os.path.join(self.config_path, ".workingdays")
+        if os.path.exists(wd_path):
+            with open(wd_path, "r", encoding="utf-8") as f:
+                days = [l.strip() for l in f if l.strip()]
+                valid_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+                if days and all(d in valid_names for d in days) and len(days) == len(set(days)):
+                    self.config['working_days'] = days
+                    self.log_step(".workingdays               validiert")
+                else:
+                    self.log_step(".workingdays               ungültig/Duplikate", False)
+                    self.errors.append("Config: .workingdays fehlerhaft")
+        else:
+            self.log_step(".workingdays               fehlt", False)
+            self.errors.append("Config: .workingdays fehlt")
+
+        # 3. Holidays
+        h_path = os.path.join(self.config_path, ".holidays")
+        self.config['holiday_dates'] = []
+        if os.path.exists(h_path):
+            with open(h_path, "r", encoding="utf-8") as f:
+                lines = [l.strip() for l in f if l.strip()]
+                dates = [l.split('|')[0].strip() for l in lines]
+                if len(dates) == len(set(dates)):
+                    self.config['holiday_dates'] = dates
+                    self.log_step(".holidays                  validiert")
+                else:
+                    self.log_step(".holidays                  Duplikate gefunden", False)
+                    self.errors.append("Config: .holidays Dubletten")
+        else:
+            self.log_step(".holidays                  fehlt (optional)", True)
+
+        # 4. Closing Days
+        c_path = os.path.join(self.config_path, ".closingdays")
+        self.config['closing_dates'] = []
+        if os.path.exists(c_path):
+            with open(c_path, "r", encoding="utf-8") as f:
+                lines = [l.strip() for l in f if l.strip()]
+                dates = [l.split('|')[0].strip() for l in lines]
+                valid_vals = ["0", "1", "0,5", "0.5"]
+                vals_ok = all(len(l.split('|')) == 2 and l.split('|')[1].strip() in valid_vals for l in lines)
+                
+                if len(dates) == len(set(dates)) and vals_ok:
+                    self.config['closing_dates'] = dates
+                    self.log_step(".closingdays               validiert")
+                else:
+                    self.log_step(".closingdays               Formatfehler/Dubletten", False)
+                    self.errors.append("Config: .closingdays fehlerhaft")
+        else:
+            self.log_step(".closingdays               fehlt (optional)", True)
+
+        # 5. Cross-Check: Holidays vs Closing Days
+        conflict = set(self.config.get('holiday_dates', [])) & set(self.config.get('closing_dates', []))
+        if conflict:
+            self.log_step(f"KONFLIKT: {conflict}", False)
+            self.errors.append(f"Konflikt: Datum in .holidays UND .closingdays")
 
     def validate_day_files(self):
-        """Prüft die Regeln für jede Tagesdatei im Monatsordner"""
-        files = [f for f in os.listdir(self.months_path) if f.endswith(".txt")]
+        """Prüft die inhaltlichen Regeln der Tagesdateien"""
+        print(f"\n--- Analyse Tagesdateien ({self.month:02d}/{self.year}) ---")
+        
+        try:
+            files = sorted([f for f in os.listdir(self.months_path) if f.endswith(".txt")], 
+                           key=lambda x: int(x.split('.')[0]))
+        except ValueError:
+            self.log_step("Dateinamen-Format ungültig", False)
+            self.errors.append("Dateinamen müssen Zahlen sein (1.txt, 2.txt...)")
+            return
+
         if not files:
-            self.fail(f"Keine Tagesdateien (.txt) in {self.months_path} gefunden.")
+            self.log_step("Keine Daten vorhanden", False)
+            return
 
         for filename in files:
+            file_path = os.path.join(self.months_path, filename)
             day_num = filename.replace(".txt", "")
-            if not day_num.isdigit() or not (1 <= int(day_num) <= 31):
-                self.errors.append(f"Ungültiger Dateiname: {filename}")
-                continue
             
-            self.check_file_content(os.path.join(self.months_path, filename), filename)
+            with open(file_path, "r", encoding="utf-8") as f:
+                lines = [l.strip() for l in f if l.strip()]
+            
+            # Analyse Inhalt
+            markers = ["Krank", "Urlaub", "Sonderurlaub", "GLZ"]
+            found_markers = [l for l in lines if l in markers]
+            work_blocks = [l for l in lines if l.startswith("-") and "Pause" not in l]
+            pause_blocks = [l for l in lines if l.startswith("-") and "Pause" in l]
 
-    def check_file_content(self, file_path, label):
-        """Inhaltliche Prüfung gemäß Spezifikation"""
-        with open(file_path, "r", encoding="utf-8") as f:
-            lines = [l.strip() for l in f if l.strip()]
-        
-        markers = ["Krank", "Urlaub", "Sonderurlaub", "GLZ"]
-        found_markers = [l for l in lines if l in markers]
-        work_blocks = [l for l in lines if l.startswith("-") and "Pause" not in l]
-        pause_blocks = [l for l in lines if l.startswith("-") and "Pause" in l]
+            # Regel-Prüfung
+            file_errors = []
+            if len(found_markers) > 1: file_errors.append("Mehrere Marker")
+            if found_markers and (work_blocks or pause_blocks): file_errors.append("Mix Marker/Blöcke")
+            if pause_blocks and not work_blocks: file_errors.append("Nur Pausen")
+            
+            # Zeit-Dubletten-Check (Einfach)
+            times = [l.split('|')[0].strip() for l in (work_blocks + pause_blocks)]
+            if len(times) != len(set(times)): file_errors.append("Doppelte Zeitblöcke")
 
-        # Regel: Mehrere Marker nicht erlaubt
-        if len(found_markers) > 1:
-            self.errors.append(f"{label}: Mehrere Tageszustände gefunden.")
+            if not file_errors:
+                self.log_step(f"Tag {day_num.ljust(2)} ({filename.ljust(6)}) : OK")
+            else:
+                err_str = ", ".join(file_errors)
+                self.log_step(f"Tag {day_num.ljust(2)} ({filename.ljust(6)}) : FEHLER ({err_str})", False)
+                self.errors.append(f"Datei {filename}: {err_str}")
 
-        # Regel: Marker und Blöcke nicht kombinierbar
-        if found_markers and (work_blocks or pause_blocks):
-            self.errors.append(f"{label}: Tageszustand darf nicht mit Arbeits-/Pausenblöcken kombiniert werden.")
-
-        # Regel: Nur Pausenblöcke ohne Arbeit nicht erlaubt
-        if pause_blocks and not work_blocks and not found_markers:
-            self.errors.append(f"{label}: Enthält nur Pausen, keine Arbeitsblöcke.")
-
-        # Zeitüberlappung & Doppelte Zeitblöcke (v1 Happy Path check)
-        times = []
-        for b in work_blocks + pause_blocks:
-            # Extrahiere Zeiten wie "08:30 - 12:00"
-            match = re.search(r'(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})', b)
-            if match:
-                times.append(match.groups())
-        
-        if len(times) != len(set(times)):
-            self.errors.append(f"{label}: Mehrfacheintrag desselben Zeitblocks.")
-
-    def fail(self, msg):
-        print(f"CRITICAL ERROR: {msg}")
-        exit(1)
-
-    def report_results(self):
-        print(f"--- Validierung für {self.month:02d}/{self.year} abgeschlossen ---")
+    def print_summary(self):
+        print("\n" + "="*50)
         if not self.errors:
-            print("✅ Alle Regeln für v1 eingehalten.")
+            print("  ZUSAMMENFASSUNG: SYSTEM BEREIT FÜR BERECHNUNG")
+            print("  Alle Validierungen erfolgreich abgeschlossen. ✅")
         else:
-            print(f"❌ {len(self.errors)} Fehler gefunden:")
+            print(f"  ZUSAMMENFASSUNG: {len(self.errors)} FEHLER GEFUNDEN ❌")
+            print("-"*50)
             for err in self.errors:
-                print(f"  - {err}")
+                print(f"  -> {err}")
+        print("="*50 + "\n")
 
 def main():
     parser = argparse.ArgumentParser(description="Arbeitszeit-Auswertungstool v1")
-    parser.add_argument("--path", required=True)
-    parser.add_argument("--year", type=int, required=True)
-    parser.add_argument("--month", type=int, required=True)
+    parser.add_argument("--path", required=True, help="Pfad zum Jahresordner")
+    parser.add_argument("--year", required=True, help="Das Jahr")
+    parser.add_argument("--month", required=True, help="Der Monat (1-12)")
     args = parser.parse_args()
 
     tracker = TimeTrackerReport(args.path, args.year, args.month)
     tracker.run_pre_checks()
     tracker.validate_configs()
     tracker.validate_day_files()
-    tracker.report_results()
+    tracker.print_summary()
 
 if __name__ == "__main__":
     main()
