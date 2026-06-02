@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="timetrack_logo.svg" height="250"/>
+  <img src="./images/timetrack_logo.svg" height="250"/>
 </p>
 
 # ⏱️ PlainTrack
@@ -7,6 +7,10 @@
 **PlainTrack** is a minimalist, local-first work hours logger and report generator. It transforms simple, versionable text files into professional, high-fidelity HTML reports.
 
 Built for developers and power users who prefer the command line and plain text over bloated web interfaces.
+
+<p align="center">
+  <img src="./images/report_screenshot.jpeg" height="450"/>
+</p>
 
 ---
 
