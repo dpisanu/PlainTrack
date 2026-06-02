@@ -1,6 +1,17 @@
 ## ⚙️ Configuration Files
 
-All configuration files are located in the `config/` directory. They use a simple, line-based format. Since these are hidden files starting with a dot, ensure your file manager is set to show hidden files.
+All configuration files are located in the `config/` directory of the respective year folder.
+
+This allows each year to define its own working-time settings, public holidays, company closing days, vacation entitlement, and other rule-relevant values.
+
+```text
+workslips/
+└── 2025/
+    ├── config/
+    └── months/
+```
+
+Since these are hidden files starting with a dot, ensure your file manager is set to show hidden files.
 
 The report generator validates the required configuration files before processing monthly work logs. Numeric values may use either `.` or `,` as the decimal separator.
 

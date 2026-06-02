@@ -13,6 +13,8 @@
 * **Local First:** Deine Daten gehören dir. Keine Cloud, kein Login, kein Tracking.
 * **Plain Text Power:** Erfasse deine Zeiten in simplen `.txt` Dateien. Schnell, einfach, zeitlos.
 * **Versionierbar:** Dank des Text-Formats lässt sich dein gesamtes Zeit-Log perfekt mit Git versionieren.
+* **Datennahe Konfiguration:** Die Konfiguration liegt direkt neben den Arbeitszeitdaten, zu denen sie gehört. So bleiben Regeln, Feiertage, Schließtage, Urlaubsansprüche und Arbeitszeitmodelle nachvollziehbar mit dem jeweiligen Datensatz verbunden.
+* **Flexible Auswertungsbereiche:** Durch die Wahl eines anderen Root-Ordners können unterschiedliche Konfigurationsbereiche abgebildet werden. z.B.: pro Jahr, Projekt, Kunde, Arbeitsvertrag, Land oder Organisation.
 * **Voll anpassbar:** Hinterlege eigene Feiertage, Schließtage und individuelle Arbeitszeitmodelle in einfachen Config-Files.
 * **Visuelle Reports:** Generiert detaillierte HTML-Übersichten mit Farbkodierung für Überstunden, Block-Analysen und Pausentracking.
 
@@ -37,11 +39,13 @@ Built for developers and power users who prefer the command line and plain text 
 
 ## ✨ Core Philosophy
 
-- **Local First:** Your data never leaves your machine. No cloud, no accounts, no tracking.
-- **Plain Text Power:** Log your hours in simple `.txt` files. Fast, future-proof, and easy to edit.
-- **Git-Ready:** Since every log and config is a flat file, your entire history is perfectly versionable via Git.
-- **Regulatory Flexibility:** Fully customizable rules for holidays, closing days, and individual work models.
-- **Visual Insights:** Generates clean HTML reports featuring color-coded overtime analysis, work-block statistics, and break tracking.
+* **Plain Text Power:** Log your hours in simple `.txt` files. Fast, future-proof, and easy to edit.
+* **Git-Ready:** Since every log and config is a flat file, your entire history is perfectly versionable via Git.
+* **Data-Scoped Configuration:** Configuration lives next to the working-time data it belongs to. This keeps rules, holidays, closing days, vacation entitlements, and work models tied to the exact data set being reported.
+* **Flexible Reporting Scopes:** By choosing a different root folder, you can define different configuration scopes. For example per year, project, client, employment contract, country, or organization.
+* **Regulatory Flexibility:** Fully customizable rules for holidays, closing days, and individual work models.
+* **Visual Insights:** Generates clean HTML reports featuring color-coded overtime analysis, work-block statistics, and break tracking.
+
 
 ---
 
@@ -58,7 +62,9 @@ Built for developers and power users who prefer the command line and plain text 
 
 ---
 
-# Structure your data
+## 📁 Data Structure
+
+PlainTrack operates with work logs in a file-based yearly structure. Each year has its own `config/` next to its `months/` directory, allowing different working-time rules, vacation entitlements, holidays, company closing days, or contractual settings per year.
 
 ```text
 my-work-logs-root/
@@ -66,6 +72,24 @@ my-work-logs-root/
 └── months/
     └── 03/                        # Month folder
         ├── 01.txt                 # One file per day
+```
+
+This means that when generating a report for a specific year, the report generator reads the configuration from that year’s folder:
+
+```bash
+python reporter.py --path ./workslips/2025/ --year 2025 --month 03
+```
+
+In this example, the configuration is loaded from:
+
+```text
+./workslips/2025/config/
+```
+
+and the monthly work logs are loaded from:
+
+```text
+./workslips/2025/months/03/
 ```
 
 ---
