@@ -62,15 +62,10 @@ Built for developers and power users who prefer the command line and plain text 
 
 ```text
 my-work-logs-root/
-├── config/
-│   ├── .workingdays          # e.g., Monday, Tuesday...
-│   ├── .dailytargethours     # e.g., 8.0
-│   ├── .holidays             # Date | Description
-│   └── .closingdays          # Date | Vacation Deduction
+├── config/                        # Configuration folder
 └── months/
-    └── 03/                   # Month folder
-        ├── 01.txt            # Day log: "08:00 - 12:00"
-        └── 02.txt            # Day log: "Krank" or "Urlaub"
+    └── 03/                        # Month folder
+        ├── 01.txt                 # One file per day
 ```
 
 ---
