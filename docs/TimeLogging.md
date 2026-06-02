@@ -20,14 +20,14 @@ Write your start and end times separated by a dash. You can have multiple blocks
 ### Recording Breaks
 To log a break, add the keyword Pause to the line. These hours will be calculated separately and subtracted from your total work time.
 ```text  
-12:30 - 13:00 | Pause
+12:30 - 13:00 | break
 ```
 
 ### Combining Everything
 A typical day file might look like this:
 ```text  
 08:00 - 12:00
-12:00 - 12:45 | Pause
+12:00 - 12:45 | break
 12:45 - 17:15
 ```
 
@@ -38,12 +38,12 @@ If you are not working at all, do not leave the file empty. Use one of the follo
 
 | Keyword | Description |
 | --- | --- |
-| Krank | Sick leave. Sets Target hours to 0 for that day. |
-| Urlaub | Vacation. Sets Target hours to 0 for that day. |
-| GLZ | Compensatory time off (Gleitzeitausgleich). Subtracts the target hours from your balance.|  
+| sick | Sick leave. Sets Target hours to 0 for that day. |
+| vacation | Vacation. Sets Target hours to 0 for that day. |
+| flex | Flextime / Compensatory time off (Flexible work schedule compensation). Subtracts the target hours from your balance.|  
 
 ```text 
-Urlaub
+vacation
 ```
 
 ---
@@ -54,4 +54,4 @@ Urlaub
 * **Notes:** You can add comments after a pipe | in work blocks. Everything after the pipe is ignored unless it contains the keyword "Pause".
 Example: 09:00 - 11:00 | Project Deepdive (counts as work).
 
-* **Sonderarbeit:** If you work on a weekend or holiday (days where Target = 0), PlainTrack will automatically flag this as a "Sonderarbeitstag" in the report.
+* **Special working hours:** If you work on a weekend or holiday (days where Target = 0), PlainTrack will automatically flag this as a "Special working hours" in the report.
