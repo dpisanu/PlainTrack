@@ -272,7 +272,7 @@ class TimeTrackerReport:
                     for line in lines:
                         if re.match(r"^\d{2}:\d{2}", line):
                             start_str, end_str, dur = self._parse_time_range(line)
-                            if "Break" in line:
+                            if "break" in line:
                                 t_break += dur
                                 break_blocks += 1
                             else:
