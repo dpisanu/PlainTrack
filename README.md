@@ -4,9 +4,11 @@
 
 # ⏱️ PlainTrack
 
-**PlainTrack** is a minimalist, local-first work hours logger and report generator. It transforms simple, versionable text files into professional, high-fidelity HTML reports.
+**PlainTrack** is a local-first, file-based time documentation tool for developers and technically fluent users who prefer plain text, CLI workflows, Git history and reproducible report generation over web-based time-entry systems.
 
-Built for developers and power users who prefer the command line and plain text over bloated web interfaces.
+**PlainTrack** provides ruleset-based self-validation of personal work-time records.
+
+It can help detect missing breaks, excessive working blocks, missing days, inconsistent entries, or configured limit violations, but it does not decide legal compliance.
 
 <p align="center">
   <img src="./images/report_screenshot.jpeg" height="450"/>
@@ -16,12 +18,13 @@ Built for developers and power users who prefer the command line and plain text 
 
 ## ✨ Core Philosophy
 
-* **Local First:** Your data never leaves your machine. No cloud, no accounts, no tracking.
+* **Local First:** Your data does not need to leave your machine. No cloud, no accounts, no tracking.
 * **Plain Text Power:** Log your hours in simple `.txt` files. Fast, future-proof, and easy to edit.
 * **Git-Ready:** Since every log and config is a flat file, your entire history is perfectly versionable via Git.
-* **Data-Scoped Configuration:** Configuration lives next to the working-time data it belongs to. This keeps rules, holidays, closing days, vacation entitlements, and work models tied to the exact data set being reported.
+* **Data-Scoped Configuration:** Configuration lives next to the working-time data it belongs to. This keeps configuration, rules tied to the exact data set being reported.
+* **Rule-Scoped Flexibility:** Fully customizable rules for holidays, closing days, and individual work models.
+* **Rule-Scoped Validation:** Validate records against a configurable rule set.
 * **Flexible Reporting Scopes:** By choosing a different root folder, you can define different configuration scopes. For example per year, project, client, employment contract, country, or organization.
-* **Regulatory Flexibility:** Fully customizable rules for holidays, closing days, and individual work models.
 * **Visual Insights:** Generates clean HTML reports featuring color-coded overtime analysis, work-block statistics, and break tracking.
 
 
@@ -137,3 +140,7 @@ python plaintrack.py --path ./workslips/2025/ --year 2025 --month 03
 * [Detailed Configuration Guide here](docs/Configuration.md)
 * [Detailed Time Logging Guide here](docs/TimeLogging.md)
 * [Detailed Generator Guide here](docs/Generator.md)
+
+# Disclaimer
+
+**PlainTrack** validates records against the rules configured by the user. These rules can model personal, company, contractual, or jurisdiction-inspired guardrails, but **PlainTrack** does not guarantee legal compliance. Whether generated reports satisfy legal, employer, or contractual requirements depends on the applicable rules and approval process.

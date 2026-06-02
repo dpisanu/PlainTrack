@@ -9,7 +9,7 @@ The `generator.py` script is a small utility designed to automate the initial se
 The generator   
 1. scans your configuration to identify valid workdays (.workingdays, .holidays, and .closingdays)
 2. and creates a standardized folder (01 to 12)
-3. and file structure for the entire year (1.txt to max 31.txt)
+3. and file structure for the entire year (01.txt to max 31.txt)
 4. and populates each work day with a default template (e.g., 08:30 - 16:30 including a break).
 
 ### Key Features:
