@@ -61,7 +61,7 @@ Before running the generator, ensure the following files exist in your config/ d
 By default, the script populates every generated .txt file with the following content:
 ```txt
 08:30 - 12:00
-12:00 - 13:00 | Pause
+12:00 - 13:00 | break
 13:00 - 16:30
 ```
 

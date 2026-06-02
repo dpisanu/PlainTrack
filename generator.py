@@ -4,14 +4,14 @@ import shutil
 from datetime import datetime, date, timedelta
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Tagesdatei Generator für Arbeitszeit-V1")
-    parser.add_argument("--path", required=True, help="Pfad zum Jahresverzeichnis")
-    parser.add_argument("--year", type=int, required=True, help="Das Jahr für die Generierung")
-    parser.add_argument("--overwrite", action="store_true", help="Benennt existierenden 'months' Ordner um und erstellt neu")
+    parser = argparse.ArgumentParser(description="Day worksheet generator")
+    parser.add_argument("--path", required=True, help="Points to the root folder of the dataset that should be reported. This folder must contain `config/` and `months/`.")
+    parser.add_argument("--year", type=int, required=True, help="Defines the calendar year used for internal date calculation.")
+    parser.add_argument("--overwrite", action="store_true", help="Rename an existing month folder Benennt existierenden `months`.")
     return parser.parse_args()
 
 def load_config(year_path, filename):
-    # Konfigurationen liegen im Unterordner 'config'
+    # Configurations are located in the 'config' subfolder
     full_path = os.path.join(year_path, "config", filename)
     if not os.path.exists(full_path):
         return []
@@ -45,33 +45,33 @@ def main():
     year = args.year
     months_dir = os.path.join(year_path, "months")
 
-    # 1. Prüfung auf existierenden "months" Ordner
+    # 1. Check for the existence of the "months" folder
     if os.path.exists(months_dir):
         if args.overwrite:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             old_dir_name = os.path.join(year_path, f"months_old_{timestamp}")
             os.rename(months_dir, old_dir_name)
-            print(f"Bestehender Ordner wurde umbenannt in: {os.path.basename(old_dir_name)}")
+            print(f"The existing folder has been renamed to: {os.path.basename(old_dir_name)}")
         else:
-            print(f"Abbruch: Der Ordner '{months_dir}' existiert bereits.")
-            print("Nutze den Parameter --overwrite, um den Ordner automatisch zu sichern und neu zu erstellen.")
+            print(f"Abort: The Folder '{months_dir}' exists already.")
+            print("Use the --overwrite parameter to automatically back up and recreate the folder.")
             return
 
-    # 2. Konfigurationsdateien aus /config/ laden
+    # 2. Load configuration files from /config/
     working_days = load_config(year_path, ".workingdays")
     holidays = load_config(year_path, ".holidays")
     closing_days = load_config(year_path, ".closingdays")
     
     if not working_days:
-        print(f"Fehler: Keine .workingdays im Pfad {os.path.join(year_path, 'config')} gefunden.")
+        print(f"Error: No .workingdays in the path {os.path.join(year_path, 'config')} found.")
         return
 
-    # 3. Zielordner anlegen
+    # 3. Create a destination folder
     os.makedirs(months_dir)
     
-    # 4. Generierung
+    # 4. Generating
     days_to_create = get_days_to_generate(year, working_days, holidays, closing_days)
-    content = "08:30 - 12:00\n12:00 - 13:00 | Pause\n13:00 - 16:30"
+    content = "08:30 - 12:00\n12:00 - 13:00 | break\n13:00 - 16:30"
     
     count = 0
     for d in days_to_create:
@@ -86,7 +86,7 @@ def main():
             f.write(content)
         count += 1
             
-    print(f"Erfolg! {count} Tagesdateien wurden in {months_dir} generiert.")
+    print(f"Success! {count} Daily files were saved in {months_dir}.")
 
 if __name__ == "__main__":
     main()
