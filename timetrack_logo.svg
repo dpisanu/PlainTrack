@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200" role="img" aria-labelledby="title desc">
+  <title id="title">PlainTrack flat space grey logo</title>
+  <desc id="desc">A flat vector logo for PlainTrack in space grey, with a segmented clock-like circle, a dotted line, and the word PlainTrack centered below the line.</desc>
+  <g>
+    <path d="M 643.90 142.30 A 420 420 0 0 1 1017.70 516.10" fill="none" stroke="#6B7076" stroke-width="34" stroke-linecap="round"/>
+<path d="M 1017.70 603.90 A 420 420 0 0 1 643.90 977.70" fill="none" stroke="#6B7076" stroke-width="34" stroke-linecap="round"/>
+<path d="M 556.10 977.70 A 420 420 0 0 1 182.30 603.90" fill="none" stroke="#6B7076" stroke-width="34" stroke-linecap="round"/>
+<path d="M 182.30 516.10 A 420 420 0 0 1 556.10 142.30" fill="none" stroke="#6B7076" stroke-width="34" stroke-linecap="round"/>
+    <rect x="252.00" y="553.00" width="56" height="14" rx="7.0" ry="7.0" fill="#6B7076"/>
+<rect x="332.00" y="553.00" width="56" height="14" rx="7.0" ry="7.0" fill="#6B7076"/>
+<rect x="412.00" y="553.00" width="56" height="14" rx="7.0" ry="7.0" fill="#6B7076"/>
+<rect x="492.00" y="553.00" width="56" height="14" rx="7.0" ry="7.0" fill="#6B7076"/>
+<rect x="572.00" y="553.00" width="56" height="14" rx="7.0" ry="7.0" fill="#6B7076"/>
+<rect x="652.00" y="553.00" width="56" height="14" rx="7.0" ry="7.0" fill="#6B7076"/>
+<rect x="732.00" y="553.00" width="56" height="14" rx="7.0" ry="7.0" fill="#6B7076"/>
+<rect x="812.00" y="553.00" width="56" height="14" rx="7.0" ry="7.0" fill="#6B7076"/>
+<rect x="892.00" y="553.00" width="56" height="14" rx="7.0" ry="7.0" fill="#6B7076"/>
+    <text x="600" y="740" text-anchor="middle" fill="#6B7076" font-family="Inter, Arial, Helvetica, sans-serif" font-size="118" font-weight="600" letter-spacing="0">PlainTrack</text>
+  </g>
+</svg>

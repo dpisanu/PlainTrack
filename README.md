@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="timetrack_logo.svg" height="250"/>
+</p>
+
 # ⏱️ PlainTrack
 
 -- German --
